@@ -7,6 +7,7 @@ info:
 paths:
   /questionnaires:
     post:
+      tags: [Request]
       description: create new questionnaire
       x-openapi-router-controller: app.api
       operationId: create_questionnaire
@@ -39,6 +40,7 @@ paths:
 
   /questionnaires/{questionnaireId}:
     get:
+      tags: [Request]
       x-openapi-router-controller: app.api
       operationId: get_questionnaire
       parameters:
@@ -69,7 +71,9 @@ paths:
 
 
     post:
-      x-openapi-router-controller: submit_questionnaire
+      tags: [Request]
+      x-openapi-router-controller: app.api
+      operationId: submit_questionnaire
       description: add a question, get current tree
       parameters:
       - in: path
@@ -93,6 +97,7 @@ paths:
 
   /questionnaires/{questionnaireId}/questions/{questionId}:
     post:
+      tags: [Request]
       x-openapi-router-controller: app.api
       operationId: post_question_from_Questionnaire
       description: add a question, get current tree
