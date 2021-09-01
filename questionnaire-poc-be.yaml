@@ -1,0 +1,235 @@
+openapi: 3.0.0
+info:
+  description: This is a simple API
+  version: "1.0.0"
+  title: Simple Inventory API
+
+paths:
+  /questionnaires:
+    post:
+      description: create new questionnaire
+      x-openapi-router-controller: app.api
+      operationId: create_questionnaire
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questionnaireId:
+                    type: string
+                    example: 'FERRARI1'
+      requestBody:
+        content:
+          application/json:
+           schema:
+              type: object
+              properties:
+                companyName:
+                  type: string
+                  example: 'TEST COMPANY'
+                policyRequestId:
+                  type: integer
+                  example: 1234567
+              required:
+                - companyName
+                - policyRequestId
+
+  /questionnaires/{questionnaireId}:
+    get:
+      x-openapi-router-controller: app.api
+      operationId: get_questionnaire
+      parameters:
+      - in: path
+        name: questionnaireId
+        schema:
+          type: string
+          maxLength: 8
+          minLength: 8
+        required: true
+      description: get the questionnaire
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questions:
+                    type: array
+                    items:
+                      x-body-name: question
+                      $ref: '#/components/schemas/Question'
+                  questionsStatus:
+                    x-body-name: questions_status
+                    $ref: '#/components/schemas/QuestionStatus'
+
+
+    post:
+      x-openapi-router-controller: submit_questionnaire
+      description: add a question, get current tree
+      parameters:
+      - in: path
+        name: questionnaireId
+        schema:
+          type: string
+          maxLength: 8
+          minLength: 8
+        required: true
+      responses:
+        '201':
+          description: successfully stored tree
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                x-body-name: question_to_submit
+                $ref: '#/components/schemas/QuestionToSubmit'
+
+  /questionnaires/{questionnaireId}/questions/{questionId}:
+    post:
+      x-openapi-router-controller: app.api
+      operationId: post_question_from_Questionnaire
+      description: add a question, get current tree
+      parameters:
+      - in: path
+        name: questionnaireId
+        schema:
+          type: string
+          maxLength: 8
+          minLength: 8
+        required: true
+      - in: path
+        name: questionId
+        schema:
+          type: string
+          maxLength: 8
+          minLength: 8
+        required: true
+      responses:
+        '201':
+          description: successfully stored tree
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  x-body-name: question
+                  $ref: '#/components/schemas/Question'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: question_to_submit
+              $ref: '#/components/schemas/QuestionToSubmit'
+components:
+  schemas:
+    Request:
+      type: object
+      x-tablename: request
+      properties:
+        id:
+          type: integer
+          x-primary-key: true
+    Answer:
+      type: object
+      required:
+        - id
+        - type
+        - displayName
+        - defaultValue
+        - inputValue
+        - example
+      properties:
+        id:
+          type: string
+          example: '296GTB4'
+        type:
+          type: string
+          example: FreeText
+        displayName:
+          type: string
+          example: Construction
+        defaultValue:
+          type: string
+          example: Construction
+        inputValue:
+          type: string
+          example: Construction
+        example:
+          type: string
+          example: null
+    Question:
+      type: object
+      required:
+        - id
+        - name
+        - question
+        - subQuestion
+        - expectMaxLen
+        - expectMinLen
+        - optionalAnswerList
+      properties:
+        id:
+          type: string
+          example: 488ENZO1
+        name:
+          type: string
+          example: Revenue
+        question:
+          type: string
+          example: enter company revenue
+        subQuestion:
+          type: string
+          example: please enter it only on dollars
+        expectMaxLen:
+          type: integer
+          example: 1
+        expectMinLen:
+          type: integer
+          example: 1
+        optionalAnswerList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+    AnswerToSubmit:
+      type: object
+      required:
+        - answerId
+        - type
+        - inputValue
+      properties:
+        answerId:
+          type: string
+          example: 458F40GT
+        type:
+          type: string
+          example: FreeText
+        inputValue:
+          type: string
+          example: '3,000,000'
+    QuestionToSubmit:
+      required:
+        - questionId
+        - answersList
+      properties:
+        questionId:
+          type: string
+          example: 360MODNA
+        answersList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerToSubmit'
+      type: object
+    QuestionStatus:
+      type: object
+      example: {'ENZO1F50':'GTS488SE'}
+
+
+
+
