@@ -1,3 +1,6 @@
+test.py
+passwords.txt
+
 .env
 .idea
 celerybeat-schedule.db

@@ -1,42 +1,25 @@
-def create_questionnaire(*args, **kwargs):
-    print(kwargs)
+from app.neo.neo_api import write_new_respondent, get_questions_for_questionnaire, write_new_answer_for_respondent, \
+    check_rules_for_new_questions, get_questions_for_update_questionnaire
 
+
+def create_questionnaire(*args, **kwargs):
+    company_name = kwargs['body']['companyName']
+    policy_request_id = kwargs['body']['policyRequestId']
+    rid = write_new_respondent(company_name, policy_request_id)
     return {
-               "questionnaireId": "FERRARI1"
+               "questionnaireId": rid
            }, 200
 
 
 def get_questionnaire(*args, **kwargs):
-    print(kwargs)
     return {
-               "questions": [
-                   {
-                       "expectMaxLen": 1,
-                       "expectMinLen": 1,
-                       "id": "488ENZO1",
-                       "name": "Revenue",
-                       "optionalAnswerList": [
-                           {
-                               "defaultValue": "Construction",
-                               "displayName": "Construction",
-                               "example": None,
-                               "id": "296GTB4",
-                               "inputValue": "Construction",
-                               "type": "FreeText"
-                           }
-                       ],
-                       "question": "enter company revenue",
-                       "subQuestion": "please enter it only on dollars"
-                   }
-               ],
-               "questionsStatus": {
-                   "ENZO1F50": "GTS488SE"
-               }
-           }, 200
+        'questions': get_questions_for_questionnaire(),
+        'questionStatus': {}
+    }
 
 
 def submit_questionnaire(*args, **kwargs):
-    print(kwargs)
+
     return [
                {
                    "answersList": [
@@ -52,24 +35,6 @@ def submit_questionnaire(*args, **kwargs):
 
 
 def post_question_from_Questionnaire(*args, **kwargs):
-    print(kwargs)
-    return [
-               {
-                   "expectMaxLen": 1,
-                   "expectMinLen": 1,
-                   "id": "488ENZO1",
-                   "name": "Revenue",
-                   "optionalAnswerList": [
-                       {
-                           "defaultValue": "Construction",
-                           "displayName": "Construction",
-                           "example": None,
-                           "id": "296GTB4",
-                           "inputValue": "Construction",
-                           "type": "FreeText"
-                       }
-                   ],
-                   "question": "enter company revenue",
-                   "subQuestion": "please enter it only on dollars"
-               }
-           ], 200
+    write_new_answer_for_respondent(kwargs)
+    questions = check_rules_for_new_questions(kwargs['questionnaireId'])
+    return get_questions_for_update_questionnaire(questions)
