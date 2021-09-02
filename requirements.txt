@@ -1,0 +1,21 @@
+# builder requirements - do not edit!
+
+chevron==0.13.1
+connexion[swagger-ui]==2.7.0
+flask-SQLAlchemy==2.4.4
+PyYAML==5.3.1
+OpenAlchemy==2.0.1
+alembic==1.4.2
+celery==4.4.7
+redis==3.5.3
+# this would fail unless the host machine has a mysql-connector install
+# conda fixes that with `conda install mysqlclient`
+mysqlclient==2.0.1
+sentry-sdk[flask]==0.19.0
+blinker==1.4
+boto3==1.17.7
+SQLAlchemy<1.4
+atbay-config==1.7
+atbay-logger==0.4
+
+# application deps - add your own
