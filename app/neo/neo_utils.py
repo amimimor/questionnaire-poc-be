@@ -33,5 +33,23 @@ def extract_answer_ids(answer_list):
 def extract_in_the_first_list(f_lst, s_lst):
     return list(set(f_lst) - set(s_lst))
 
+
 def check_rule_in_answers(rule_list, answer_list):
     return set(rule_list).issubset(set(answer_list))
+
+
+def make_dict_to_cypher_str(dict_to_transform):
+    my_str = "{"
+    for key in dict_to_transform:
+        my_str += f"""{key}:"{dict_to_transform[key]}","""
+    my_str = my_str[:-1]
+    my_str += '}'
+    return my_str
+
+
+def make_list_to_cypher_str(list_to_transform):
+    return str(list_to_transform).replace('\'', '\"')
+
+
+def make_id_to_cypher_str(id_to_transform):
+    return f'"{id_to_transform}"'

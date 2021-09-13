@@ -1,10 +1,19 @@
 import uuid
 from neo4j import GraphDatabase
 
-uri = r"neo4j+s://bd62b7e5.databases.neo4j.io:7687"
+uri = r"bolt+s://atb-1-instance-1.cwmlat30smfr.us-east-1.neptune.amazonaws.com:8182"
 with open('passwords.txt') as f:
     password = f.readlines()
 PASSWORD = password[0]
+
+
+def make_dict_to_cypher_str(dict_to_transform):
+    my_str = "{"
+    for key in dict_to_transform:
+        my_str += f"""{key}:"{dict_to_transform[key]}","""
+    my_str = my_str[:-1]
+    my_str += '}'
+    return my_str
 
 
 def generate_node_id():
@@ -12,63 +21,68 @@ def generate_node_id():
 
 
 def create_question_answer_with_1_answer(tx, answer_node, question_node):
-    query = ("CREATE (a:Answer:MatanDev $answer_node), (q:Question:MatanDev $question_node), "
-             "(q) - [hs:hasAnswer]->(a) "
-             "RETURN q, a")
-    tx.run(query, answer_node=answer_node, question_node=question_node)
+    query = f"CREATE (a:Answer:MatanDev {make_dict_to_cypher_str(answer_node)}), (q:Question:MatanDev " \
+            f"{make_dict_to_cypher_str(question_node)}), (q) - [hs:hasAnswer]->(a) "
+    tx.run(query)
 
 
 def create_question_answer_with_2_answer(tx, answer_node1, answer_node2, question_node):
-    query = ("CREATE (a:Answer:MatanDev $answer_node1), (a2:Answer:MatanDev $answer_node2), "
-             "(q:Question:MatanDev $question_node), (q) - [hs:hasAnswer]->(a) , (q)-[hs2:hasAnswer]->(a2)"
-             "RETURN q, a")
-    tx.run(query, answer_node1=answer_node1, answer_node2=answer_node2, question_node=question_node)
+    query = f"CREATE (a:Answer:MatanDev {make_dict_to_cypher_str(answer_node1)}), (a2:Answer:MatanDev " \
+            f"{make_dict_to_cypher_str(answer_node2)}), (q:Question:MatanDev {make_dict_to_cypher_str(question_node)}" \
+            f"), (q) - [hs:hasAnswer]->(a) , (q)-[hs2:hasAnswer]->(a2)"
+    tx.run(query)
 
 
 def create_forms(tx, f1, f2, f3):
-    query = ("CREATE (f:Form:MatanDev $f1), (f2:Form:MatanDev $f2), (f3:Form:MatanDev $f3)"
-             "return f,f2,f3")
-    tx.run(query, f1=f1, f2=f2, f3=f3)
+    query = f"CREATE (f:Form:MatanDev {make_dict_to_cypher_str(f1)}), (f2:Form:MatanDev {make_dict_to_cypher_str(f2)})," \
+            f" (f3:Form:MatanDev {make_dict_to_cypher_str(f3)})"
+    tx.run(query)
 
 
 def connect_form_with_questions(tx, f_id, q_ids):
-    query = ("MATCH (f:Form:MatanDev), (q:Question:MatanDev) "
-             "WHERE f.Id = $f_id and q.Id IN $q_ids "
-             "CREATE (f)-[hq:hasQuestion]->(q)"
-             "RETURN f,q")
-    tx.run(query, f_id=f_id, q_ids=q_ids)
+    q_ids = str(q_ids).replace('\'', '\"')
+    f_id = f'"{f_id}"'
+    q = f"MATCH (f:Form:MatanDev), (q:Question:MatanDev) " \
+        f"WHERE f.Id = {f_id} and q.Id IN {q_ids} " \
+        f"CREATE (f)-[hq:hasQuestion]->(q)"
+    tx.run(q)
 
 
 def create_rules(tx, r0, r1, r2):
     query = ("Create (r0:Rule:MatanDev $r0),"
              "(r1:Rule:MatanDev $r1),"
-             "(r2:Rule:MatanDev $r2) "
-             "return r0, r1, r2")
+             "(r2:Rule:MatanDev $r2) ")
     tx.run(query, r0=r0, r1=r1, r2=r2)
 
 
 def create_rule_from(tx, f_id, r_ids):
-    query = ("MATCH (f:Form:MatanDev), (r:Rule:MatanDev) "
-             "WHERE f.Id = $f_id and r.Id IN $r_ids "
-             "CREATE (f)-[rf:ruleFrom]->(r) "
-             "RETURN f,r")
-    tx.run(query, f_id=f_id, r_ids=r_ids)
+    r_ids = str(r_ids).replace('\'', '\"')
+    f_id = f'"{f_id}"'
+    q = f"MATCH (f:Form:MatanDev), (r:Rule:MatanDev) " \
+        f"WHERE f.Id = {f_id} and r.Id IN {r_ids} " \
+        f"CREATE (f)-[rf:ruleFrom]->(r) "
+    tx.run(q)
 
 
 def create_rule_to(tx, f_id, r_id):
+    f_id = f'"{f_id}"'
+    r_id = f'"{r_id}"'
     query = ("MATCH (f:Form:MatanDev), (r:Rule:MatanDev) "
              "WHERE f.Id = $f_id and r.Id = $r_id "
-             "CREATE (f)-[rt:ruleTo]->(r) "
-             "RETURN f,r")
-    tx.run(query, f_id=f_id, r_id=r_id)
+             "CREATE (f)-[rt:ruleTo]->(r) ")
+    q = f"MATCH (f:Form:MatanDev), (r:Rule:MatanDev) " \
+        f"WHERE f.Id = {f_id} and r.Id = {r_id} " \
+        f"CREATE (f)-[rt:ruleTo]->(r) "
+    tx.run(q)
 
 
 def connect_answer_to_rule(tx, r_id, a_ids):
-    query = ("MATCH (a:Answer:MatanDev), (r:Rule:MatanDev) "
-             "WHERE a.Id IN $a_ids and r.Id = $r_id "
-             "CREATE (a)-[aw:answerWith]->(r) "
-             "RETURN a,r")
-    tx.run(query, r_id=r_id, a_ids=a_ids)
+    a_ids = str(a_ids).replace('\'', '\"')
+    r_id = f'"{r_id}"'
+    q = f"MATCH (a:Answer:MatanDev), (r:Rule:MatanDev) " \
+        f"WHERE a.Id IN {a_ids} and r.Id = {r_id} " \
+        f"CREATE (a)-[aw:answerWith]->(r) "
+    tx.run(q)
 
 
 def delete_all(tx):
@@ -343,7 +357,7 @@ def get_ids_list(obs):
 
 
 def write_all():
-    driver = GraphDatabase.driver(uri, auth=('neo4j', PASSWORD))
+    driver = GraphDatabase.driver(uri, auth=('', ''))
     with driver.session() as session:
         session.write_transaction(delete_all)
         a1, q1 = quest1()
